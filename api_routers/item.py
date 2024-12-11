@@ -1,43 +1,31 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-# from ..dependencies import get_token_header
-from fastapi import Header, HTTPException
-
-# dependence
-async def get_token_header(x_token: str = Header()):
-    if x_token != "fake-super-secret-token":
-        raise HTTPException(status_code=400, detail="X-Token header invalid")
+from api_routers.denpendices import get_token_header
 
 
-async def get_query_token(token: str):
-    if token != "jessica":
-        raise HTTPException(status_code=400, detail="No Jessica token provided")
-
-
-router = APIRouter(
+item_router = APIRouter(
     prefix="/items",
     tags=["items"],
     dependencies=[Depends(get_token_header)],
-    responses={404: {"description": "Not found"}},
+    responses={404: {"description": "Not found"}},  # 定义一个字典，键是状态码，值是状态码的描述字典
 )
-
 
 fake_items_db = {"plumbus": {"name": "Plumbus"}, "gun": {"name": "Portal Gun"}}
 
 
-@router.get("/")
+@item_router.get("/")
 async def read_items():
     return fake_items_db
 
 
-@router.get("/{item_id}")
+@item_router.get("/{item_id}")
 async def read_item(item_id: str):
     if item_id not in fake_items_db:
         raise HTTPException(status_code=404, detail="Item not found")
     return {"name": fake_items_db[item_id]["name"], "item_id": item_id}
 
 
-@router.put(
+@item_router.put(
     "/{item_id}",
     tags=["custom"],
     responses={403: {"description": "Operation forbidden"}},
